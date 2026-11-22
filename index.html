@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Für Oma Marita & Opa Ludwig</title>
+    <script src="https://unpkg.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fdfbf7; color: #2c2c2c; font-size: 20px; line-height: 1.6; margin: 0; padding: 0; overflow-x: hidden; }
+        #snow-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
+        header { background: linear-gradient(135deg, #8b2635, #5e1621); color: #ffffff; text-align: center; padding: 40px 20px; border-bottom: 6px solid #d4af37; }
+        header h1 { margin: 0; font-size: 2.2em; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        header p { font-size: 1.2em; margin-top: 10px; }
+        #countdown-bar { background-color: #2e5a44; color: #fff; text-align: center; padding: 12px 15px; font-weight: bold; font-size: 19px; border-bottom: 3px solid #d4af37; }
+        nav { display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; padding: 20px; background-color: #f4efe6; }
+        nav a { background-color: #2e5a44; color: white; text-decoration: none; padding: 15px 25px; border-radius: 10px; font-weight: bold; font-size: 1.1em; }
+        nav a:hover { background-color: #1e3d2e; }
+        main { max-width: 850px; margin: 30px auto; padding: 0 20px; position: relative; z-index: 10; }
+        .karte { background-color: #ffffff; border: 2px solid #e0d8c8; border-radius: 15px; padding: 30px; margin-bottom: 35px; box-shadow: 0 6px 15px rgba(0,0,0,0.06); }
+        .karte h2 { color: #8b2635; margin-top: 0; border-bottom: 2px solid #f4efe6; padding-bottom: 10px; }
+        .kerzen-reihe { display: flex; justify-content: center; gap: 25px; margin: 20px 0; font-size: 42px; }
+        .kerze-btn { background: #fdfbf7; border: 2px solid #d4af37; border-radius: 12px; padding: 12px 18px; cursor: pointer; font-size: 36px; transition: transform 0.2s; }
+        .kerze-btn:hover { transform: scale(1.1); }
+        .tag-eingabe { width: 100%; box-sizing: border-box; padding: 18px; font-size: 22px; border: 3px solid #2e5a44; border-radius: 10px; margin: 15px 0; background-color: #fdfbf7; }
+        #tages-inhalt { background-color: #f4efe6; border-left: 6px solid #8b2635; padding: 20px; border-radius: 8px; margin-top: 15px; font-size: 21px; display: none; }
+        #easter-egg-box { display: none; margin-top: 25px; padding: 20px; background-color: #fff8e7; border: 3px dashed #d4af37; border-radius: 15px; text-align: center; }
+        #spielfeld { position: relative; width: 100%; height: 260px; background-color: #2e5a44; border-radius: 12px; margin: 15px 0; overflow: hidden; user-select: none; }
+        #geschenk-ziel { position: absolute; font-size: 55px; cursor: pointer; display: none; }
+        .spiel-btn { background-color: #8b2635; color: white; border: none; padding: 15px 25px; font-size: 19px; font-weight: bold; border-radius: 10px; cursor: pointer; margin: 5px; }
+        .quiz-btn { display: block; width: 100%; text-align: left; background-color: #f4efe6; border: 2px solid #ccc; padding: 15px 20px; margin: 10px 0; border-radius: 10px; font-size: 20px; cursor: pointer; }
+        .quiz-btn:hover { background-color: #e6dec8; }
+        #quiz-ergebnis { font-weight: bold; margin-top: 15px; padding: 15px; border-radius: 8px; display: none; }
+        footer { text-align: center; padding: 30px; background-color: #f4efe6; color: #555; margin-top: 50px; }
+        #geheimer-footer-code { display: none; font-size: 11px; color: #aaa; margin-top: 8px; font-family: monospace; letter-spacing: 2px; }
+        #auth-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.94); z-index: 9998; justify-content: center; align-items: center; font-family: 'Courier New', monospace; }
+        .auth-box { background: #050f05; border: 2px solid #00ff41; box-shadow: 0 0 35px #00ff41; padding: 35px; border-radius: 10px; color: #00ff41; text-align: center; max-width: 420px; width: 90%; }
+        #god-terminal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #030803; color: #00ff41; font-family: 'Courier New', Courier, monospace; z-index: 9999; overflow-y: auto; padding: 20px; box-sizing: border-box; }
+        #matrix-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.16; pointer-events: none; z-index: -1; }
+        .god-header { border-bottom: 2px solid #00ff41; padding-bottom: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; text-shadow: 0 0 8px #00ff41; }
+        .god-btn { background-color: rgba(0, 30, 0, 0.9); color: #00ff41; border: 1px solid #00ff41; padding: 9px 15px; font-family: monospace; font-size: 15px; cursor: pointer; margin: 3px; }
+        .god-btn:hover { background-color: #00ff41; color: #000; font-weight: bold; }
+        .god-panel { border: 1px solid #00ff41; background-color: rgba(5, 18, 5, 0.92); padding: 18px; margin-top: 12px; border-radius: 6px; }
+        #live-code-editor { width: 100%; height: 260px; background-color: #000; color: #00ff41; border: 1px solid #00ff41; font-family: 'Courier New', monospace; font-size: 14px; padding: 10px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <canvas id="snow-canvas"></canvas>
+    <header>
+        <h1>Frohe Weihnachten, Oma Marita & Opa Ludwig! 🎄</h1>
+        <p id="header-sub">Eure ganz persönliche Internetseite aus Simmerath</p>
+    </header>
+    <div id="countdown-bar">⏳ Lade Weihnachts-Countdown...</div>
+    <nav>
+        <a href="#gruss">💌 Weihnachtsgruß</a>
+        <a href="#kalender">😂 Tages-Witz</a>
+        <a href="#quiz">❓ Großes Quiz</a>
+    </nav>
+    <main>
+        <section id="gruss" class="karte">
+            <h2>Liebe Marita, lieber Ludwig,</h2>
+            <p>für euren Adventskalender habe ich euch eine eigene kleine Seite im Internet gebaut! Ihr könnt hier jeden Tag vorbeischauen, Kerzen anzünden, Musik hören und euch einen Witz abholen.</p>
+            <div style="text-align:center; background:#fdfbf7; padding:15px; border-radius:12px; border:1px solid #e0d8c8;">
+                <strong>🕯️ Euer digitaler Adventskranz (zum Anzünden anklicken!):</strong>
+                <div class="kerzen-reihe">
+                    <button class="kerze-btn" onclick="toggleKerze(this)">🕯️</button>
+                    <button class="kerze-btn" onclick="toggleKerze(this)">🕯️</button>
+                    <button class="kerze-btn" onclick="toggleKerze(this)">🕯️</button>
+                    <button class="kerze-btn" onclick="toggleKerze(this)">🕯️</button>
+                </div>
+                <button class="spiel-btn" style="background-color:#2e5a44;" onclick="spieleJingleBells()">🎵 Jingle Bells Melodie abspielen</button>
+            </div>
+        </section>
+
+        <section id="kalender" class="karte">
+            <h2>Euer Advents-Witz des Tages</h2>
+            <p>Tippt hier einfach die Zahl des heutigen Tages ein (1 bis 24):</p>
+            <input type="number" id="tag-feld" class="tag-eingabe" placeholder="es ist der..." oninput="zeigeTagesInhalt()">
+            <div id="tages-inhalt"></div>
+
+            <div id="easter-egg-box">
+                <h3>🎉 Geheimes Heiligabend-Spiel freigeschaltet! 🎉</h3>
+                <p>Klickt in <strong>15 Sekunden</strong> so viele Geschenke wie möglich an!</p>
+                <p style="font-size: 22px;">Punkte: <strong id="aktuelle-punkte">0</strong> | 🏆 Rekord: <strong id="highscore-anzeige">0</strong> | Zeit: <strong id="rest-zeit">15</strong>s</p>
+                <div id="spielfeld"><div id="geschenk-ziel" onclick="fangeGeschenk()">🎁</div></div>
+                <button id="start-spiel-btn" class="spiel-btn" onclick="starteSpiel()">Spiel starten!</button>
+            </div>
+        </section>
+
+        <section id="quiz" class="karte">
+            <h2>Großes Heimat- & Familienquiz</h2>
+            <p id="quiz-fortschritt" style="font-weight: bold; color: #2e5a44;">Frage 1 von 5</p>
+            <p id="quiz-frage" style="font-size: 22px; font-weight: bold;"></p>
+            <div id="quiz-antworten"></div>
+            <div id="quiz-ergebnis"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Mit ganz viel Liebe programmiert für Oma & Opa ❤️ – Dezember 2026</p>
+        <div id="geheimer-footer-code">SYS_KEY_01: 7331</div>
+    </footer>
+    <div id="auth-modal">
+        <div class="auth-box">
+            <h2 style="margin-top:0;">🔒 SECURITY LEVEL 2</h2>
+            <p>KEY (7331) AKZEPTIERT. MASTER-PIN EINGEBEN:</p>
+            <input type="password" id="master-pin-input" placeholder="MASTER-PIN..." style="width:90%; padding:12px; background:#000; color:#00ff41; border:1px solid #00ff41; font-family:monospace; font-size:18px; text-align:center; margin-bottom:15px;">
+            <div id="auth-error" style="color:#ff3333; font-weight:bold; margin-bottom:10px; display:none;">⛔ ACCESS DENIED!</div>
+            <button class="god-btn" onclick="pruefeMasterPin()">[ ENTSPERREN ]</button>
+            <button class="god-btn" style="border-color:#ff3333; color:#ff3333;" onclick="document.getElementById('auth-modal').style.display='none'">[ ABBRUCH ]</button>
+        </div>
+    </div>
+
+    <div id="god-terminal">
+        <canvas id="matrix-bg"></canvas>
+        <div class="god-header">
+            <div><h2 style="margin:0;">⚡ ROOT@SIMMERATH-MAINFRAME:~# GOD_MODE</h2><small>2FA VERIFIED | SECURITY CLEARANCE: OMEGA</small></div>
+            <button class="god-btn" style="border-color:#ff3333; color:#ff3333;" onclick="schliesseTerminal()">[X] SCHLIESSEN</button>
+        </div>
+        <div>
+            <button class="god-btn" onclick="zeigeGodTab('tab-chat')">💬 GEHEIM-CHAT</button>
+            <button class="god-btn" onclick="zeigeGodTab('tab-console')">📟 KOMMANDOZEILE</button>
+            <button class="god-btn" onclick="zeigeGodTab('tab-editor')">💻 LIVE-CODE</button>
+            <button class="god-btn" onclick="zeigeGodTab('tab-invaders')">👾 SPACE-DEFENDER</button>
+            <button class="god-btn" onclick="zeigeGodTab('tab-snake')">🐍 CYBER-SNAKE</button>
+            <button class="god-btn" onclick="zeigeGodTab('tab-hack')">🔢 CODE-KNACKER</button>
+            <button class="god-btn" onclick="zeigeGodTab('tab-reaktion')">⚡ REAKTION</button>
+        </div>
+
+        <div id="tab-chat" class="god-panel">
+            <h3>> ENCRYPTED P2P-MESSENGER</h3>
+            <p style="margin:5px 0;">DEINE CHAT-ZAHL: <strong id="my-chat-id" style="font-size:22px; color:#fff; background:#003300; padding:3px 10px; border:1px solid #00ff41;">...</strong> <small>(Gib diese Zahl deinem Chatpartner)</small></p>
+            <div style="margin:12px 0; padding:10px; border:1px dashed #00ff41;">
+                <strong>+ Neuen Kontakt speichern / verbinden:</strong><br>
+                <input id="new-contact-id" placeholder="4-stellige Zahl" style="width:140px; padding:7px; background:#000; color:#00ff41; border:1px solid #00ff41; font-family:monospace;">
+                <input id="new-contact-name" placeholder="Name (z.B. Oma & Opa)" style="width:180px; padding:7px; background:#000; color:#00ff41; border:1px solid #00ff41; font-family:monospace;">
+                <button class="god-btn" onclick="addChatContact()">SPEICHERN</button>
+            </div>
+            <div style="margin:10px 0;">
+                <strong>Kontakte (anklicken zum Wechseln):</strong>
+                <div id="contact-list" style="margin-top:6px;"></div>
+            </div>
+            <div id="active-chat-area" style="display:none; border-top:1px solid #00ff41; padding-top:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span>Chat mit: <strong id="current-chat-title" style="color:#fff;"></strong> (<span id="chat-conn-status">Offline</span>)</span>
+                    <button class="god-btn" style="font-size:12px; padding:4px 8px;" onclick="renameActiveContact()">✏️ UMBENENNEN</button>
+                </div>
+                <div id="chat-messages" style="height:170px; overflow-y:auto; background:#000; border:1px solid #00ff41; padding:10px; margin-bottom:8px; font-size:14px;"></div>
+                <div style="display:flex; gap:6px;">
+                    <input id="chat-msg-input" placeholder="Nachricht schreiben..." style="flex:1; padding:9px; background:#000; color:#00ff41; border:1px solid #00ff41; font-family:monospace;">
+                    <button class="god-btn" onclick="sendChatMsg()">SENDEN</button>
+                </div>
+            </div>
+            <div style="margin-top:15px; border-top:1px dashed #00ff41; padding-top:10px;">
+                <strong>💾 Chat-Backup & Wiederherstellung:</strong><br>
+                <button class="god-btn" onclick="exportChatBackup()">🔑 BACKUP-CODE ERSTELLEN</button>
+                <button class="god-btn" onclick="importChatBackup()">📥 CODE WIEDERHERSTELLEN</button>
+                <textarea id="chat-backup-box" placeholder="Hier erscheint dein Sicherungs-Code (oder füge hier einen Code zum Wiederherstellen ein)..." style="width:100%; height:50px; margin-top:6px; background:#000; color:#00ff41; border:1px solid #00ff41; font-family:monospace; font-size:12px;"></textarea>
+            </div>
+        </div>
+        <div id="tab-console" class="god-panel" style="display:none;">
+            <h3>> INTERAKTIVE SYSTEM-KONSOLE</h3>
+            <div id="console-output" style="background:#000; border:1px solid #00ff41; height:180px; overflow-y:auto; padding:10px; font-size:14px; margin-bottom:10px;">
+                > Willkommen im Mainframe. Tippe <strong>help</strong> für alle geheimen Befehle!
+            </div>
+            <input id="console-input" placeholder="Befehl eintippen (help, snow, party, jingle, unlock, clear)..." style="width:72%; padding:10px; background:#000; color:#00ff41; border:1px solid #00ff41; font-family:monospace;">
+            <button class="god-btn" onclick="runConsoleCmd()">AUSFÜHREN</button>
+        </div>
+
+        <div id="tab-editor" class="god-panel" style="display:none;">
+            <h3>> QUELLCODE DER WEBSITE LIVE UMSCHREIBEN</h3>
+            <textarea id="live-code-editor"></textarea><br><br>
+            <button class="god-btn" onclick="wendeCodeAn()">🚀 LIVE ANWENDEN</button>
+            <button class="god-btn" onclick="speichereCodeDauerhaft()">💾 SPEICHERN</button>
+            <button class="god-btn" onclick="resetCode()">⚠️ RESET</button>
+        </div>
+
+        <div id="tab-invaders" class="god-panel" style="display:none; text-align:center;">
+            <h3>> XMAS SPACE-DEFENDER (Highscore: <span id="inv-hs">0</span> | Punkte: <span id="inv-score">0</span>)</h3>
+            <canvas id="inv-canvas" width="320" height="300" style="border:2px solid #00ff41; background:#000;"></canvas><br>
+            <button class="god-btn" onclick="moveInvPlayer(-25)">⬅️ LINKS</button>
+            <button class="god-btn" onclick="starteInvaders()">▶️ START</button>
+            <button class="god-btn" onclick="shootInv()">🔥 FEUER</button>
+            <button class="god-btn" onclick="moveInvPlayer(25)">RECHTS ➡️</button>
+        </div>
+
+        <div id="tab-snake" class="god-panel" style="display:none; text-align:center;">
+            <h3>> CYBER-SNAKE (Highscore: <span id="snake-hs">0</span> | Punkte: <span id="snake-score">0</span>)</h3>
+            <canvas id="snake-canvas" width="320" height="320" style="border:2px solid #00ff41; background:#000;"></canvas><br>
+            <button class="god-btn" onclick="setSnakeDir(0,-1)">⬆️</button><br>
+            <button class="god-btn" onclick="setSnakeDir(-1,0)">⬅️</button>
+            <button class="god-btn" onclick="starteSnake()">▶️ START</button>
+            <button class="god-btn" onclick="setSnakeDir(1,0)">➡️</button><br>
+            <button class="god-btn" onclick="setSnakeDir(0,1)">⬇️</button>
+        </div>
+
+        <div id="tab-hack" class="god-panel" style="display:none;">
+            <h3>> CODE-KNACKER (1-100) | Rekord: <span id="hack-hs">-</span></h3>
+            <input type="number" id="hack-input" style="background:#000; color:#00ff41; border:1px solid #00ff41; padding:10px; font-size:18px;" placeholder="Zahl 1-100">
+            <button class="god-btn" onclick="pruefeHackZahl()">PRÜFEN</button>
+            <button class="god-btn" onclick="neuesHackSpiel()">NEUE ZAHL</button>
+            <p id="hack-log" style="font-size:18px; margin-top:15px;">> Bereit...</p>
+        </div>
+
+        <div id="tab-reaktion" class="god-panel" style="display:none; text-align:center;">
+            <h3>> REAKTIONS-TEST (Bestzeit: <span id="reak-hs">-</span> ms)</h3>
+            <div id="reak-box" onclick="klickReaktion()" style="width:100%; height:180px; background:#330000; border:2px solid #00ff41; display:flex; align-items:center; justify-content:center; font-size:24px; cursor:pointer; margin:15px 0;">KLICKE HIER ZUM STARTEN</div>
+        </div>
+    </div>
+    <script>
+        const GEHEIMER_MASTER_PIN = "simmerath2026";
+
+        const adventsTexte = {
+            1: "🎄 <strong>1. Dezember:</strong><br>Warum hat der Weihnachtsmann so einen großen Sack?<br><em>Weil er nur einmal im Jahr kommt!</em>",
+            2: "❄️ <strong>2. Dezember:</strong><br>Treffen sich zwei Schneeflocken in der Luft. Sagt die eine: „Wohin fliegst du?“<br>Sagt die andere: „Nach Simmerath, ein bisschen Chaos auf den Straßen machen!“",
+            3: "🍪 <strong>3. Dezember:</strong><br>Was ist der Unterschied zwischen einem Bäcker und einem Weihnachtsmann?<br><em>Der Bäcker hat Plätzchen im Ofen, der Weihnachtsmann hat Plätzchen auf dem Schlitten!</em>",
+            4: "🕯️ <strong>4. Dezember:</strong><br>Sagt die eine Kerze zur anderen: „Sag mal, ist Wasser eigentlich gefährlich?“<br>Antwortet die andere: „Davon kannst du ausgehen!“",
+            5: "🦌 <strong>5. Dezember:</strong><br>Warum hat das Rentier Rudolf eine rote Nase?<br><em>Weil es im Winter vergessen hat, einen Schal anzuziehen!</em>",
+            6: "🎅 <strong>6. Dezember:</strong><br>Fragt der Nikolaus den kleinen Fritzchen: „Warst du denn auch das ganze Jahr über brav?“<br>Fritzchen überlegt kurz und sagt: „Weißt du was, Nikolaus – wir lassen das Thema einfach und ich nehme nur die Mandarinen!“",
+            7: "⛄ <strong>7. Dezember:</strong><br>Was haben ein Schneemann und ein Bankräuber gemeinsam?<br><em>Beide warten auf weiße Weihnachten – und beide haben eine Möhre im Gesicht, wenn es schiefgeht!</em>",
+            8: "🎶 <strong>8. Dezember:</strong><br>Kommt ein Mann in den Musikladen: „Ich hätte gerne eine Platte mit Weihnachtsliedern.“<br>Verkäufer: „Soll ich sie Ihnen einpacken?“<br>Mann: „Nein danke, ich singe sie gleich auf dem Heimweg!“",
+            9: "🎁 <strong>9. Dezember:</strong><br>Was schenkt man einem Hund zu Weihnachten?<br><em>Einen Bell-Gutschein!</em>",
+            10: "🎄 <strong>10. Dezember:</strong><br>Stehen zwei Tannenbäume im Wald. Sagt der eine: „Du, ich glaube, ich werde dieses Jahr ein Weihnachtsbaum.“<br>Sagt der andere: „Ach quatsch, das redest du dir nur ein – du bist doch völlig benadelt!“",
+            11: "⭐ <strong>11. Dezember:</strong><br>Warum können Seeräuber keinen Adventskranz basteln?<br><em>Weil sie den Kreis nicht schließen können – sie haben ja nur eine Augenklappe!</em>",
+            12: "🧦 <strong>12. Dezember:</strong><br>Fragt der Enkel seinen Opa: „Opa, warum hängst du denn deine Socken an den Kamin?“<br>Opa: „In der Hoffnung, dass der Weihnachtsmann sie endlich mal wäscht!“",
+            13: "🍫 <strong>13. Dezember:</strong><br>Wie nennt man einen Weihnachtsmann ohne Bart?<br><em>Sommermann!</em>",
+            14: "🕯️ <strong>14. Dezember:</strong><br>Was passiert, wenn man im Dezember zu viele Plätzchen isst?<br><em>Man bekommt eine Advents-Kugel!</em>",
+            15: "❄️ <strong>15. Dezember:</strong><br>Fragt der Lehrer: „Was kommt nach dem Dezember?“<br>Meldet sich Fritzchen: „Die Rechnung für die Geschenke!“",
+            16: "🦌 <strong>16. Dezember:</strong><br>Wie verständigen sich Rentiere am Nordpol?<br><em>Über das Rentier-Netz!</em>",
+            17: "🎅 <strong>17. Dezember:</strong><br>Warum fährt der Weihnachtsmann eigentlich einen Schlitten und kein Auto?<br><em>Weil er in der Eifel im Winter keine Parkplätze findet!</em>",
+            18: "🍪 <strong>18. Dezember:</strong><br>Sagt der Zimtstern zum Vanillekipferl: „Du siehst heute aber krümelig aus!“<br>Sagt das Kipferl: „Kein Wunder, ich habe die ganze Nacht im Backofen geschwitzt!“",
+            19: "🎄 <strong>19. Dezember:</strong><br>Warum steht der Weihnachtsbaum im Wohnzimmer?<br><em>Weil er im Badezimmer beim Zähneputzen immer so piekst!</em>",
+            20: "⛄ <strong>20. Dezember:</strong><br>Was sagt ein Schneemann zum anderen im Frühling?<br><em>„Mir wird ganz warm ums Herz – ich glaube, ich schmelze dahin!“</em>",
+            21: "🎁 <strong>21. Dezember:</strong><br>„Schatz, was wünschst du dir zu Weihnachten?“<br>„Ach, nichts Besonderes – Hauptsache, es glänzt und fährt von 0 auf 100 in 3 Sekunden!“<br><em>Am Heiligabend lag eine Personenwaage unter dem Baum...</em>",
+            22: "🔔 <strong>22. Dezember:</strong><br>Warum klingeln an Weihnachten überall die Glöckchen?<br><em>Damit der Weihnachtsmann nicht einschläft!</em>",
+            23: "🎅 <strong>23. Dezember:</strong><br>Was macht der Weihnachtsmann, wenn er durch den Kamin rutscht?<br><em>Er macht sich ganz schön staubig!</em>",
+            24: "🎁 <strong>24. Dezember:</strong><br>Kommt der Weihnachtsmann ins Wohnzimmer und ruft: „Ho, ho, ho! Wo sind denn die braven Großeltern?“<br>Rufen Marita und Ludwig: „Hier sind wir – und der Kaffee ist auch schon fertig!“<br><br><strong>Frohe Weihnachten, ihr zwei! ❤️</strong>"
+        };
+        const snowCanvas = document.getElementById('snow-canvas'), sCtx = snowCanvas.getContext('2d');
+        let flakes = [];
+        function initSnow(count = 45) {
+            snowCanvas.width = window.innerWidth; snowCanvas.height = window.innerHeight;
+            flakes = Array.from({length: count}, () => ({ x: Math.random() * snowCanvas.width, y: Math.random() * snowCanvas.height, r: Math.random() * 3.5 + 1.5, d: Math.random() * 1 + 0.5 }));
+        }
+        initSnow();
+        window.addEventListener('resize', () => initSnow(flakes.length));
+        setInterval(() => {
+            sCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height); sCtx.fillStyle = "rgba(255, 255, 255, 0.85)"; sCtx.beginPath();
+            flakes.forEach(f => { sCtx.moveTo(f.x, f.y); sCtx.arc(f.x, f.y, f.r, 0, Math.PI * 2); f.y += f.d; if (f.y > snowCanvas.height) { f.y = -5; f.x = Math.random() * snowCanvas.width; } });
+            sCtx.fill();
+        }, 30);
+
+        function updateCountdown() {
+            const now = new Date(), xmas = new Date(now.getFullYear(), 11, 24, 18, 0, 0);
+            if (now > xmas) xmas.setFullYear(xmas.getFullYear() + 1);
+            const diff = xmas - now;
+            document.getElementById('countdown-bar').innerText = `🎄 Noch ${Math.floor(diff/86400000)} Tage, ${Math.floor((diff/3600000)%24)} Std., ${Math.floor((diff/60000)%60)} Min. und ${Math.floor((diff/1000)%60)} Sek. bis Heiligabend!`;
+        }
+        setInterval(updateCountdown, 1000); updateCountdown();
+
+        function toggleKerze(btn) { btn.innerText = (btn.innerText === "🕯️") ? "🔥" : "🕯️"; }
+
+        function spieleJingleBells() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [[330,0.2],[330,0.2],[330,0.4],[330,0.2],[330,0.2],[330,0.4],[330,0.2],[392,0.2],[261,0.3],[293,0.1],[330,0.6]];
+            let t = ctx.currentTime;
+            notes.forEach(([freq, dur]) => {
+                const osc = ctx.createOscillator(), gain = ctx.createGain();
+                osc.frequency.value = freq; osc.type = "triangle";
+                gain.gain.setValueAtTime(0.15, t); gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(t); osc.stop(t + dur); t += dur + 0.05;
+            });
+        }
+
+        const quizFragen = [
+            { frage: "1. Was darf bei einem perfekten Sonntag in Simmerath auf keinen Fall fehlen?", optionen: ["A) Ein Ausflug an die Nordsee", "B) Ein Stück Kuchen und eine gute Tasse Kaffee", "C) Eine spontane Weltreise mit dem Traktor"], richtig: 1 },
+            { frage: "2. Welcher bekannte See liegt direkt bei uns vor der Haustür in der Eifel?", optionen: ["A) Der Bodensee", "B) Der Rursee", "C) Der Gardasee"], richtig: 1 },
+            { frage: "3. Was zieht der Weihnachtsmann an, wenn er durch die Eifel stapft?", optionen: ["A) Flip-Flops und Badehose", "B) Warme Stiefel und einen roten Mantel", "C) Schlittschuhe"], richtig: 1 },
+            { frage: "4. Wie viele Kerzen brennen an Heiligabend auf einem klassischen Adventskranz?", optionen: ["A) Zwei Stück", "B) Alle vier Kerzen", "C) Zwölf Stück"], richtig: 1 },
+            { frage: "5. Wer sind die allerbesten Großeltern in ganz Simmerath?", optionen: ["A) Oma Marita & Opa Ludwig", "B) Der Weihnachtsmann und Knecht Ruprecht", "C) Niemand"], richtig: 0 }
+        ];
+        let aktuelleFrageIdx = 0, hatteFehler = false;
+        function ladeQuizFrage() {
+            const q = quizFragen[aktuelleFrageIdx];
+            document.getElementById('quiz-fortschritt').innerText = `Frage ${aktuelleFrageIdx + 1} von ${quizFragen.length}`;
+            document.getElementById('quiz-frage').innerText = q.frage;
+            const c = document.getElementById('quiz-antworten'); c.innerHTML = "";
+            q.optionen.forEach((opt, idx) => {
+                const btn = document.createElement('button'); btn.className = 'quiz-btn'; btn.innerText = opt;
+                btn.onclick = () => bewerteQuizAntwort(idx === q.richtig); c.appendChild(btn);
+            });
+        }
+        function bewerteQuizAntwort(ok) {
+            const box = document.getElementById('quiz-ergebnis'); box.style.display = 'block';
+            if (!ok) { hatteFehler = true; box.style.backgroundColor = '#f8d7da'; box.style.color = '#721c24'; box.innerHTML = '😄 Fast! Probiert noch einmal eine andere Antwort.'; return; }
+            box.style.backgroundColor = '#d4edda'; box.style.color = '#155724';
+            if (aktuelleFrageIdx < quizFragen.length - 1) {
+                aktuelleFrageIdx++; box.innerHTML = '🎉 Richtig! Weiter...';
+                setTimeout(() => { box.style.display = 'none'; ladeQuizFrage(); }, 800);
+            } else {
+                document.getElementById('quiz-antworten').innerHTML = ""; document.getElementById('quiz-frage').innerText = "Geschafft!";
+                if (!hatteFehler) {
+                    box.innerHTML = '🏆 PERFEKT! Alle 5 Fragen ohne einen einzigen Fehler gelöst!';
+                    document.getElementById('geheimer-footer-code').style.display = 'block';
+                } else {
+                    box.innerHTML = '🎉 Super gemacht! <br><button class="spiel-btn" style="margin-top:10px; font-size:16px;" onclick="aktuelleFrageIdx=0;hatteFehler=false;document.getElementById(\'quiz-ergebnis\').style.display=\'none\';ladeQuizFrage();">Nochmal ohne Fehler versuchen</button>';
+                }
+            }
+        }
+        ladeQuizFrage();
+
+        let highscore = localStorage.getItem('adventsHighscore') || 0;
+        document.getElementById('highscore-anzeige').innerText = highscore;
+        const tagFeld = document.getElementById('tag-feld');
+
+        function zeigeTagesInhalt() {
+            const raw = tagFeld.value.trim(), anzeigeBox = document.getElementById('tages-inhalt'), easterEggBox = document.getElementById('easter-egg-box');
+            if (raw === "7331") {
+                tagFeld.value = ""; document.getElementById('auth-modal').style.display = 'flex';
+                document.getElementById('master-pin-input').value = ""; document.getElementById('auth-error').style.display = 'none';
+                document.getElementById('master-pin-input').focus(); return;
+            }
+            const zahl = parseInt(raw, 10);
+            if (isNaN(zahl)) { anzeigeBox.style.display = "none"; easterEggBox.style.display = "none"; return; }
+            anzeigeBox.style.display = "block";
+            anzeigeBox.innerHTML = adventsTexte[zahl] || "Bitte gebt eine Zahl zwischen <strong>1</strong> und <strong>24</strong> ein.";
+            easterEggBox.style.display = (zahl === 24) ? "block" : "none";
+        }
+        tagFeld.addEventListener('input', zeigeTagesInhalt);
+
+        function pruefeMasterPin() {
+            if (document.getElementById('master-pin-input').value === GEHEIMER_MASTER_PIN) {
+                document.getElementById('auth-modal').style.display = 'none'; oeffneTerminal();
+            } else { document.getElementById('auth-error').style.display = 'block'; }
+        }
+        document.getElementById('master-pin-input').addEventListener('keyup', e => { if (e.key === 'Enter') pruefeMasterPin(); });
+        let myChatId = localStorage.getItem('simmerathChatId') || Math.floor(1000 + Math.random() * 9000).toString();
+        localStorage.setItem('simmerathChatId', myChatId);
+        document.getElementById('my-chat-id').innerText = myChatId;
+
+        let chatData = JSON.parse(localStorage.getItem('simmerathChatData') || '{"contacts":{},"messages":{}}');
+        let activeContactId = null, chatPeer = null, activeConn = null;
+
+        function initChatPeer() {
+            if (chatPeer || typeof Peer === 'undefined') return;
+            chatPeer = new Peer('simmerath-chat-' + myChatId);
+            chatPeer.on('connection', conn => {
+                const remoteId = conn.peer.replace('simmerath-chat-', '');
+                if (!chatData.contacts[remoteId]) { chatData.contacts[remoteId] = "Unbekannt (" + remoteId + ")"; saveChatData(); renderContacts(); }
+                conn.on('data', data => { if (data.type === 'msg') appendMsg(remoteId, chatData.contacts[remoteId], data.text); });
+            });
+        }
+        initChatPeer();
+
+        function saveChatData() { localStorage.setItem('simmerathChatData', JSON.stringify(chatData)); }
+        function addChatContact() {
+            const id = document.getElementById('new-contact-id').value.trim();
+            const name = document.getElementById('new-contact-name').value.trim() || ("User " + id);
+            if (!id) return;
+            chatData.contacts[id] = name; if (!chatData.messages[id]) chatData.messages[id] = [];
+            saveChatData(); document.getElementById('new-contact-id').value = ""; document.getElementById('new-contact-name').value = "";
+            renderContacts(); selectContact(id);
+        }
+        function renderContacts() {
+            const list = document.getElementById('contact-list'); list.innerHTML = "";
+            Object.keys(chatData.contacts).forEach(id => {
+                const btn = document.createElement('button'); btn.className = 'god-btn';
+                btn.style.background = (id === activeContactId) ? '#004400' : '#001a00';
+                btn.innerText = `${chatData.contacts[id]} [#${id}]`;
+                btn.onclick = () => selectContact(id); list.appendChild(btn);
+            });
+        }
+        renderContacts();
+
+        function selectContact(id) {
+            activeContactId = id; renderContacts();
+            document.getElementById('active-chat-area').style.display = 'block';
+            document.getElementById('current-chat-title').innerText = `${chatData.contacts[id]} (#${id})`;
+            document.getElementById('chat-conn-status').innerText = "Verbinde...";
+            renderMessages();
+            if (activeConn) activeConn.close();
+            if (chatPeer) {
+                activeConn = chatPeer.connect('simmerath-chat-' + id);
+                activeConn.on('open', () => { document.getElementById('chat-conn-status').innerText = "🟢 Online"; });
+                activeConn.on('error', () => { document.getElementById('chat-conn-status').innerText = "🟡 Offline"; });
+            }
+        }
+        function renameActiveContact() {
+            if (!activeContactId) return;
+            const neu = prompt("Neuer Name für #" + activeContactId + ":", chatData.contacts[activeContactId]);
+            if (neu && neu.trim()) { chatData.contacts[activeContactId] = neu.trim(); saveChatData(); renderContacts(); document.getElementById('current-chat-title').innerText = `${neu.trim()} (#${activeContactId})`; }
+        }
+        function appendMsg(contactId, sender, text) {
+            if (!chatData.messages[contactId]) chatData.messages[contactId] = [];
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            chatData.messages[contactId].push(`[${time}] ${sender}: ${text}`);
+            saveChatData(); if (contactId === activeContactId) renderMessages();
+        }
+        function renderMessages() {
+            const box = document.getElementById('chat-messages');
+            box.innerHTML = (chatData.messages[activeContactId] || []).map(m => `<div>${m}</div>`).join('');
+            box.scrollTop = box.scrollHeight;
+        }
+        function sendChatMsg() {
+            const inp = document.getElementById('chat-msg-input'), txt = inp.value.trim();
+            if (!txt || !activeContactId) return; inp.value = ""; appendMsg(activeContactId, "ICH", txt);
+            if (activeConn && activeConn.open) activeConn.send({ type: 'msg', text: txt });
+        }
+        document.getElementById('chat-msg-input').addEventListener('keyup', e => { if (e.key === 'Enter') sendChatMsg(); });
+
+        function exportChatBackup() { document.getElementById('chat-backup-box').value = btoa(unescape(encodeURIComponent(JSON.stringify(chatData)))); alert("🔑 Backup-Code erstellt!"); }
+        function importChatBackup() {
+            try {
+                const raw = document.getElementById('chat-backup-box').value.trim(); if (!raw) return;
+                chatData = JSON.parse(decodeURIComponent(escape(atob(raw))));
+                saveChatData(); renderContacts(); if (activeContactId) renderMessages(); alert("✅ Chat wiederhergestellt!");
+            } catch (e) { alert("⛔ Ungültiger Backup-Code!"); }
+        }
+        let matrixInterval;
+        function startMatrix() {
+            const mc = document.getElementById('matrix-bg'), mctx = mc.getContext('2d');
+            mc.width = window.innerWidth; mc.height = window.innerHeight;
+            const cols = Math.floor(mc.width / 16), ypos = Array(cols).fill(0);
+            clearInterval(matrixInterval);
+            matrixInterval = setInterval(() => {
+                mctx.fillStyle = 'rgba(0, 0, 0, 0.08)'; mctx.fillRect(0, 0, mc.width, mc.height);
+                mctx.fillStyle = '#00ff41'; mctx.font = '15px monospace';
+                ypos.forEach((y, ind) => { mctx.fillText(Math.random() > 0.5 ? '1' : '0', ind * 16, y); ypos[ind] = y > mc.height + Math.random() * 5000 ? 0 : y + 16; });
+            }, 50);
+        }
+
+        function oeffneTerminal() { document.getElementById('god-terminal').style.display = 'block'; document.getElementById('live-code-editor').value = document.documentElement.outerHTML; startMatrix(); }
+        function schliesseTerminal() { document.getElementById('god-terminal').style.display = 'none'; clearInterval(matrixInterval); }
+        function zeigeGodTab(id) { ['tab-chat', 'tab-console', 'tab-editor', 'tab-invaders', 'tab-snake', 'tab-hack', 'tab-reaktion'].forEach(t => document.getElementById(t).style.display = (t === id) ? 'block' : 'none'); }
+
+        function runConsoleCmd() {
+            const inp = document.getElementById('console-input'), out = document.getElementById('console-output'), cmd = inp.value.trim().toLowerCase();
+            inp.value = ""; if (!cmd) return;
+            out.innerHTML += `<div>root@simmerath:~# ${cmd}</div>`;
+            if (cmd === "help") out.innerHTML += `<div style="color:#aaffaa;">Befehle: help, snow, party, jingle, unlock, clear</div>`;
+            else if (cmd === "snow") { initSnow(250); out.innerHTML += `<div>❄️ Schneesturm gestartet!</div>`; }
+            else if (cmd === "party") { document.body.style.background = 'linear-gradient(45deg, #ffcccc, #ccffcc, #ccccff)'; out.innerHTML += `<div>🌈 Party-Farben aktiviert!</div>`; }
+            else if (cmd === "jingle") { spieleJingleBells(); out.innerHTML += `<div>🎵 Spiele Jingle Bells...</div>`; }
+            else if (cmd === "unlock") { const b = document.getElementById('tages-inhalt'); b.style.display = 'block'; b.innerHTML = Object.values(adventsTexte).join('<hr>'); out.innerHTML += `<div>🔓 Alle 24 Türchen geöffnet!</div>`; }
+            else if (cmd === "clear") { out.innerHTML = ""; }
+            else { out.innerHTML += `<div style="color:#ff5555;">Unbekannter Befehl. Tippe 'help'.</div>`; }
+            out.scrollTop = out.scrollHeight;
+        }
+        document.getElementById('console-input').addEventListener('keyup', e => { if (e.key === 'Enter') runConsoleCmd(); });
+
+        function wendeCodeAn() { const c = document.getElementById('live-code-editor').value; document.open(); document.write(c); document.close(); }
+        function speichereCodeDauerhaft() { localStorage.setItem('customWebsiteCode', document.getElementById('live-code-editor').value); alert('💾 Gespeichert!'); }
+        function resetCode() { localStorage.removeItem('customWebsiteCode'); location.reload(); }
+
+        let invX = 140, invBullets = [], invEnemies = [], invLoop, invScore = 0, invHs = localStorage.getItem('godInvHs') || 0;
+        document.getElementById('inv-hs').innerText = invHs;
+        function moveInvPlayer(dx) { invX = Math.max(10, Math.min(280, invX + dx)); }
+        function shootInv() { invBullets.push({x: invX + 12, y: 265}); }
+        function starteInvaders() {
+            clearInterval(invLoop); invScore = 0; invBullets = []; invEnemies = []; document.getElementById('inv-score').innerText = 0;
+            for (let r = 0; r < 2; r++) for (let c = 0; c < 5; c++) invEnemies.push({x: 30 + c * 55, y: 20 + r * 35});
+            const ctx = document.getElementById('inv-canvas').getContext('2d');
+            invLoop = setInterval(() => {
+                ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 320, 300); ctx.fillStyle = '#00ff41'; ctx.fillRect(invX, 270, 30, 15);
+                invBullets.forEach(b => b.y -= 8); invBullets.forEach(b => { ctx.fillStyle = '#ffff00'; ctx.fillRect(b.x, b.y, 4, 10); });
+                invEnemies.forEach((en, ei) => {
+                    en.y += 0.35; ctx.fillStyle = '#ff0055'; ctx.fillRect(en.x, en.y, 28, 20);
+                    invBullets.forEach((b, bi) => {
+                        if (b.x > en.x && b.x < en.x + 28 && b.y > en.y && b.y < en.y + 20) {
+                            invEnemies.splice(ei, 1); invBullets.splice(bi, 1); invScore += 20; document.getElementById('inv-score').innerText = invScore;
+                            if (invScore > invHs) { invHs = invScore; localStorage.setItem('godInvHs', invHs); document.getElementById('inv-hs').innerText = invHs; }
+                        }
+                    });
+                    if (en.y > 260) { clearInterval(invLoop); alert('INVASION! Punkte: ' + invScore); }
+                });
+                if (invEnemies.length === 0) { for (let c = 0; c < 5; c++) invEnemies.push({x: 30 + c * 55, y: 20}); }
+            }, 40);
+        }
+        let punkte = 0, zeit = 15, spielAktiv = false, timerInterval;
+        function starteSpiel() {
+            if (spielAktiv) return; spielAktiv = true; punkte = 0; zeit = 15;
+            document.getElementById('aktuelle-punkte').innerText = 0; document.getElementById('rest-zeit').innerText = 15;
+            document.getElementById('start-spiel-btn').style.display = 'none'; document.getElementById('geschenk-ziel').style.display = 'block'; bewegeGeschenk();
+            timerInterval = setInterval(() => {
+                zeit--; document.getElementById('rest-zeit').innerText = zeit;
+                if (zeit <= 0) {
+                    clearInterval(timerInterval); spielAktiv = false; document.getElementById('geschenk-ziel').style.display = 'none';
+                    const b = document.getElementById('start-spiel-btn'); b.style.display = 'inline-block'; b.innerText = 'Nochmal!';
+                    if (punkte > highscore) { highscore = punkte; localStorage.setItem('adventsHighscore', highscore); document.getElementById('highscore-anzeige').innerText = highscore; }
+                    alert('Zeit vorbei! Punkte: ' + punkte);
+                }
+            }, 1000);
+        }
+        function bewegeGeschenk() { const f = document.getElementById('spielfeld'), g = document.getElementById('geschenk-ziel'); g.style.left = Math.floor(Math.random()*Math.max(20, f.clientWidth-70))+'px'; g.style.top = Math.floor(Math.random()*Math.max(20, f.clientHeight-70))+'px'; }
+        function fangeGeschenk() { if (spielAktiv) { punkte++; document.getElementById('aktuelle-punkte').innerText = punkte; bewegeGeschenk(); } }
+
+        let snake = [{x:8,y:8}], dx=1, dy=0, food={x:12,y:12}, snakeLoop, snakeScore=0, snakeHs=localStorage.getItem('godSnakeHs')||0;
+        document.getElementById('snake-hs').innerText = snakeHs;
+        function setSnakeDir(nx,ny) { if(nx!==-dx && ny!==-dy){dx=nx;dy=ny;} }
+        document.addEventListener('keydown', e => { if(document.getElementById('tab-snake').style.display==='block'){ if(e.key==='ArrowUp')setSnakeDir(0,-1); if(e.key==='ArrowDown')setSnakeDir(0,1); if(e.key==='ArrowLeft')setSnakeDir(-1,0); if(e.key==='ArrowRight')setSnakeDir(1,0); }});
+        function starteSnake() {
+            clearInterval(snakeLoop); snake=[{x:8,y:8}]; dx=1; dy=0; snakeScore=0; document.getElementById('snake-score').innerText=0;
+            const ctx = document.getElementById('snake-canvas').getContext('2d');
+            snakeLoop = setInterval(() => {
+                const h = {x: snake.x+dx, y: snake.y+dy};
+                if(h.x<0||h.x>=16||h.y<0||h.y>=16||snake.some(s=>s.x===h.x&&s.y===h.y)){ clearInterval(snakeLoop); alert('GAME OVER: '+snakeScore); return; }
+                snake.unshift(h);
+                if(h.x===food.x&&h.y===food.y){ snakeScore+=10; document.getElementById('snake-score').innerText=snakeScore; if(snakeScore>snakeHs){snakeHs=snakeScore;localStorage.setItem('godSnakeHs',snakeHs);document.getElementById('snake-hs').innerText=snakeHs;} food={x:Math.floor(Math.random()*16),y:Math.floor(Math.random()*16)}; } else snake.pop();
+                ctx.fillStyle='#000'; ctx.fillRect(0,0,320,320); ctx.fillStyle='#ff0055'; ctx.fillRect(food.x*20,food.y*20,18,18); ctx.fillStyle='#00ff41'; snake.forEach(s=>ctx.fillRect(s.x*20,s.y*20,18,18));
+            }, 140);
+        }
+
+        let geheimZahl = Math.floor(Math.random()*100)+1, versuche=0, hackHs=localStorage.getItem('godHackHs')||'-';
+        document.getElementById('hack-hs').innerText = hackHs;
+        function neuesHackSpiel(){ geheimZahl=Math.floor(Math.random()*100)+1; versuche=0; document.getElementById('hack-log').innerText='> Neue Zahl (1-100)...'; }
+        function pruefeHackZahl(){
+            const v=parseInt(document.getElementById('hack-input').value,10); if(isNaN(v))return; versuche++; const l=document.getElementById('hack-log');
+            if(v<geheimZahl) l.innerText=`> Versuch ${versuche}: ${v} ZU KLEIN!`; else if(v>geheimZahl) l.innerText=`> Versuch ${versuche}: ${v} ZU GROSS!`;
+            else { l.innerText=`> GEKNACKT (${geheimZahl}) in ${versuche} Versuchen!`; if(hackHs==='-'||versuche<parseInt(hackHs)){hackHs=versuche;localStorage.setItem('godHackHs',hackHs);document.getElementById('hack-hs').innerText=hackHs;} }
+        }
+
+        let reakStatus='idle', reakStart=0, reakTimeout, reakHs=localStorage.getItem('godReakHs')||'-';
+        document.getElementById('reak-hs').innerText = reakHs;
+        function klickReaktion(){
+            const b=document.getElementById('reak-box');
+            if(reakStatus==='idle'){ reakStatus='waiting'; b.style.background='#664400'; b.innerText='WARTE AUF GRÜN...'; reakTimeout=setTimeout(()=>{reakStatus='ready';b.style.background='#00aa00';b.innerText='JETZT KLICKEN!';reakStart=Date.now();},1500+Math.random()*2500); }
+            else if(reakStatus==='waiting'){ clearTimeout(reakTimeout); reakStatus='idle'; b.style.background='#550000'; b.innerText='ZU FRÜH! Neustart'; }
+            else if(reakStatus==='ready'){ const d=Date.now()-reakStart; reakStatus='idle'; b.style.background='#002200'; b.innerText=`ZEIT: ${d} ms!`; if(reakHs==='-'||d<parseInt(reakHs)){reakHs=d;localStorage.setItem('godReakHs',reakHs);document.getElementById('reak-hs').innerText=reakHs;} }
+        }
+    </script>
+</body>
+</html>
